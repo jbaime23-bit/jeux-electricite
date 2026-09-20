@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Atelier Électricité Bâtiment Pro</title>
+    <style>
+        * { box-sizing: border-box; font-family: sans-serif; }
+        body { background-color: #f4f7f6; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        
+        /* BANNIÈRES PUBLICITAIRES */
+        .pub-banner { width: 100%; max-width: 450px; height: 60px; background-color: #e2e8f0; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #64748b; margin: 10px 0; font-weight: bold; border-radius: 6px; }
+        
+        .container { width: 95%; max-width: 450px; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; }
+        
+        /* BOUTONS DU MENU (DIV SIMPLES) */
+        .div-menu { display: block; width: 100%; padding: 16px; margin: 10px 0; font-size: 15px; font-weight: bold; background-color: #ffffff; border: 2px solid #2563eb; color: #2563eb; border-radius: 8px; cursor: pointer; text-align: left; -webkit-tap-highlight-color: transparent; }
+        .div-menu:active { background-color: #2563eb; color: #ffffff; }
+        .div-menu.premium { border-color: #db2777; color: #db2777; background-color: #fdf2f8; }
+        .badge-lock { float: right; background: #db2777; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+
+        /* INTERFACES DE JEU FIXES (MASQUÉES PAR DÉFAUT) */
+        #lvl1-screen, #lvl2-screen, #monetize-screen, #ad-interstitial { display: none; }
+        
+        /* BOUTONS DE CHOIX TECHNIQUES */
+        .div-option { width: 100%; padding: 12px; margin: 10px 0; font-size: 14px; font-weight: 600; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; text-align: left; }
+        .div-option:active { background-color: #e2e8f0; }
+        
+        .wire-indicator { display: inline-block; padding: 4px 10px; color: white; font-weight: bold; border-radius: 4px; margin-bottom: 10px; font-size: 14px; }
+        .btn-action { display: block; width: 100%; padding: 14px; font-size: 16px; font-weight: bold; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; text-align: center; }
+        .btn-neutral { background: #475569; }
+
+        /* ÉCRANS PLEIN ÉCRAN POUR LES PUBS */
+        .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="pub-banner">💸 ESPACE PUBLICITAIRE GOOGLE ADSENSE (400x60)</div>
+
+    <!-- ================= 1. ÉCRAN DU MENU PRINCIPAL ================= -->
+    <div id="menu-screen" class="container">
+        <h1>Atelier Électricité Bâtiment Pro</h1>
+        <p style="color: #64748b; font-size: 13px; margin-top: 0;">Sélectionnez votre exercice de raccordement :</p>
+        
+        <div class="div-menu" onclick="ouvrirNiveau1()">Niveau 1 : Prise de Courant</div>
+        <div class="div-menu" onclick="ouvrirNiveau2()">Niveau 2 : Simple Allumage</div>
+        <div class="div-menu premium" onclick="ouvrirPremium()">Niveau 3 : Double Allumage <span class="badge-lock">🔒 Bloqué</span></div>
+        <div class="div-menu premium" onclick="ouvrirPremium()">Niveau 4 : Va-et-vient <span class="badge-lock">🔒 Bloqué</span></div>
+        <div class="div-menu premium" onclick="ouvrirPremium()">Niveau 5 : Télérupteur <span class="badge-lock">🔒 Bloqué</span></div>
+        <div class="div-menu premium" onclick="ouvrirPremium()">Niveau 6 : Minuterie Simple <span class="badge-lock">🔒 Bloqué</span></div>
+        <div class="div-menu premium" onclick="ouvrirPremium()">Niveau 7 : Minuterie avec Effet <span class="badge-lock">🔒 Bloqué</span></div>
+    </div>
+
+    <!-- ================= 2. INTERFACE BRUTE : NIVEAU 1 ================= -->
+    <div id="lvl1-screen" class="container">
+        <h2 style="font-size: 18px; margin: 5px 0;">Niveau 1 : La Prise de Courant</h2>
+        <p style="color: #64748b; font-size: 13px;">Raccordement des conducteurs de protection et d'alimentation.</p>
+        
+        <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px; text-align: left;">
+            <div class="wire-indicator" style="background: #dc2626;">CONDUCTEUR : PHASE (Rouge)</div>
+            <div style="font-weight: 600; color: #334155; margin-bottom: 10px;">Où raccordez-vous la Phase venant du disjoncteur ?</div>
+            
+            <div class="div-option" onclick="reponseLvl1(true)">A) Sur la borne L (Ligne / Rouge) de la prise de courant</div>
+            <div class="div-option" onclick="reponseLvl1(false)">B) Sur la borne N (Neutre / Bleu) de la prise de courant</div>
+            <div class="div-option" onclick="reponseLvl1(false)">C) Sur la borne centrale de Terre (Vert/Jaune)</div>
+        </div>
+        <div class="btn-action btn-neutral" onclick="retourMenu()">⬅ Abandonner</div>
+    </div>
+
+    <!-- ================= 3. INTERFACE BRUTE : NIVEAU 2 ================= -->
+    <div id="lvl2-screen" class="container">
+        <h2 style="font-size: 18px; margin: 5px 0;">Niveau 2 : Le Simple Allumage</h2>
+        <p style="color: #64748b; font-size: 13px;">Alimentation d'un point lumineux via un interrupteur.</p>
+        
+        <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px; text-align: left;">
+            <div class="wire-indicator" style="background: #dc2626;">CONDUCTEUR : PHASE (Rouge)</div>
+            <div style="font-weight: 600; color: #334155; margin-bottom: 10px;">Où devez-vous envoyer la Phase directe du tableau ?</div>
+            
+            <div class="div-option" onclick="reponseLvl2(false)">A) Directement à la borne de la lampe de l'éclairage</div>
+            <div class="div-option" onclick="reponseLvl2(true)">B) À la borne commune d'entrée (L ou P) de l'interrupteur</div>
+            <div class="div-option" onclick="reponseLvl2(false)">C) À la borne de Neutre du tableau de répartition</div>
+        </div>
+        <div class="btn-action btn-neutral" onclick="retourMenu()">⬅ Abandonner</div>
+    </div>
+
+    <!-- ================= 4. POPUP DE MONÉTISATION PREMIUM ================= -->
+    <div id="monetize-screen" class="overlay-screen">
+        <h2 style="color:#db2777; margin-bottom:10px;">🔒 Contenu Technique Bloqué</h2>
+        <p style="color:#cbd5e1; max-width:280px; margin-top:0; font-size:14px;">Les schémas avancés (Double allumage, Va-et-vient, Télérupteurs et Minuteries) nécessitent le mode Premium.</p>
+        <div class="btn-action" style="background:#db2777;" onclick="alert('Achat simulé !')">Activer le Pack Pro (4.99€)</div>
+        <div class="btn-action" style="background:#2563eb;" onclick="regarderPubRecompense()">🔓 Regarder une Vidéo pour débloquer</div>
+        <div class="btn-action btn-neutral" onclick="fermerPremium()">Fermer</div>
+    </div>
+
+    <!-- ================= 5. MONÉTISATION : INTERSTITIAL FORCÉ DE 10 SECONDES ================= -->
+    <div id="ad-interstitial" class="overlay-screen">
+        <span style="color:#64748b; font-size:11px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;">Annonce Vidéo</span>
+        <h2 style="margin:10px 0; font-size:24px;">Publicité Partenaire</h2>
+        <div style="width:280px; height:150px; background:#1e293b; border:2px dashed #475569; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#64748b; font-style:italic; font-size:14px;">Lecture du spot publicitaire...</div>
+        <p id="ad-timer" style="margin-top:20px; color:#f43f5e; font-weight:bold; font-size:16px;">Votre exercice reprend dans 10s...</p>
+    </div>
+
+    <div class="pub-banner">💸 ESPACE PUBLICITAIRE GOOGLE ADSENSE (400x60)</div>
+
+    <!-- SCRIPTS BRUTS SANS AUCUNE BOUCLE (ANTI-BLOCAGE) -->
+    <script>
+        function retourMenu() {
+            document.getElementById('lvl1-screen').style.display = 'none';
+            document.getElementById('lvl2-screen').style.display = 'none';
+            document.getElementById('menu-screen').style.display = 'block';
+        }
+
+        function ouvrirNiveau1() {
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('lvl1-screen').style.display = 'block';
+        }
+
+        function ouvrirNiveau2() {
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('lvl2-screen').style.display = 'block';
+        }
+
+        function ouvrirPremium() {
+            document.getElementById('monetize-screen').style.display = 'flex';
+        }
+
+        function fermerPremium() {
+            document.getElementById('monetize-screen').style.display = 'none';
+        }
+
+        function reponseLvl1(estCorrect) {
+            if(estCorrect) {
+                alert("🟢 Raccordement correct !");
+                lancerPublicite10s(function() {
+                    alert("Atelier Prise de courant validé !");
+                    retourMenu();
+                });
+            } else {
+                alert("🔴 Erreur ! Court-circuit ou non-conformité règlementaire.");
+            }
+        }
+
+        function reponseLvl2(estCorrect) {
+            if(estCorrect) {
+                alert("🟢 Câblage correct ! La phase est bien sectionnée.");
+                lancerPublicite10s(function() {
+                    alert("Atelier Simple Allumage validé !");
+                    retourMenu();
+                });
+            } else {
+                alert("🔴 Erreur de câblage ! Danger d'électrocution lors du remplacement de la lampe.");
+            }
+        }
+
+      
