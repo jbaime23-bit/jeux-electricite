@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu Électricité Bâtiment Pro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #pub-banner-top {
+            width: 100%;
+            max-width: 728px;
+            height: 90px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            border: 1px dashed #999;
+        }
+        .container {
+            width: 95%;
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        /* STYLE DU MENU D'ACCUEIL */
+        #main-menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .menu-title {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .menu-subtitle {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+        .level-card {
+            background: #f8f9fa;
+            border: 2px solid #007bff;
+            border-radius: 6px;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            color: #007bff;
+        }
+        .level-card:hover {
+            background: #007bff;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* STYLE DE L'INTERFACE DE JEU */
+        #game-screen {
+            display: none; /* Caché au départ */
+        }
+        #circuit-board {
+            border: 3px solid #333;
+            background-color: #ffffff;
+            margin-top: 15px;
+            max-width: 100%;
+            height: auto;
+        }
+        .color-selector {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .color-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid #ccc;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .color-btn.active {
+            border-color: #000;
+            transform: scale(1.15);
+        }
+        .btn-phase { background-color: #cc0000; }
+        .btn-neutre { background-color: #0000ff; }
+        .btn-terre { background-color: #00cc00; }
+        .btn-retour { background-color: #ff6600; }
+        
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button.action-btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            color: white;
+        }
+        #btn-verify { background-color: #28a745; }
+        #btn-reset { background-color: #dc3545; }
+        #btn-menu { background-color: #6c757d; }
+        #status-message {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* POPUPS RESTE INCHANGÉ */
+        .overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            color: white;
+            border-radius: 8px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .overlay h2 { font-size: 28px; margin-bottom: 10px; }
+        .pub-box {
+            border: 2px dashed #ffcc00;
+            padding: 20px;
+            background: #222;
+            border-radius: 6px;
+            max-width: 80%;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="pub-banner-top">
+        <span>Espace Publicitaire (728x90)</span>
+    </div>
+
+    <!-- 1. ÉCRAN DU MENU PRINCIPAL -->
+    <div id="menu-screen" class="container">
+        <h1 class="menu-title">Atelier Électricité Bâtiment Pro</h1>
+        <p class="menu-subtitle">Maîtrisez les schémas électriques par la pratique</p>
+        
+        <h3>Sélectionnez un schéma de montage :</h3>
+        <div class="levels-grid">
+            <div class="level-card" onclick="startLevelFromMenu(1)">Niveau 1 : Prise de Courant</div>
+            <div class="level-card" onclick="startLevelFromMenu(2)">Niveau 2 : Simple Allumage</div>
+            <div class="level-card" onclick="startLevelFromMenu(3)">Niveau 3 : Double Allumage</div>
+            <div class="level-card" onclick="startLevelFromMenu(4)">Niveau 4 : Va-et-vient</div>
+            <div class="level-card" onclick="startLevelFromMenu(5)">Niveau 5 : Télérupteur</div>
+            <div class="level-card" onclick="startLevelFromMenu(6)">Niveau 6 : Minuterie Simple</div>
+            <div class="level-card" onclick="startLevelFromMenu(7)">Niveau 7 : Minuterie avec Effet</div>
+        </div>
+    </div>
+
+    <!-- 2. ÉCRAN DE JEU INTERACTIF -->
+    <div id="game-screen" class="container">
+        <h1 id="level-title">Niveau 1 : La Prise de Courant</h1>
+        <p id="level-desc">Reliez les bornes du Disjoncteur à la Prise.</p>
+        
+        <div class="color-selector">
+            <div id="panel-phase" class="color-btn btn-phase active" onclick="selectColor('#cc0000', this)" title="Phase (Rouge)"></div>
+            <div id="panel-neutre" class="color-btn btn-neutre" onclick="selectColor('#0000ff', this)" title="Neutre (Bleu)"></div>
+            <div id="panel-terre" class="color-btn btn-terre" onclick="selectColor('stripe', this)" title="Terre (Vert/Jaune)"></div>
+            <div id="panel-retour" class="color-btn btn-retour" style="display:none;" onclick="selectColor('#ff6600', this)" title="Navette / Retour (Orange)"></div>
+        </div>
+
+        <canvas id="circuit-board" width="760" height="400"></canvas>
+        <div id="status-message">Tracez votre premier fil !</div>
+
+        <div class="controls">
+            <button id="btn-verify" class="action-btn" onclick="verifyCircuit()">Vérifier le câblage</button>
+            <button id="btn-reset" class="action-btn" onclick="resetCanvas()">Recommencer</button>
+            <button id="btn-menu" class="action-btn" onclick="showMainMenu()">Retour au Menu</button>
+        </div>
+
+        <!-- POPUP 1 : ÉCRAN DE VICTOIRE (5 SECONDES) -->
+        <div id="victory-overlay" class="overlay" style="background: rgba(40, 167, 69, 0.95);">
+            <h2>🎉 EXCELLENT TRAVAIL ! 🎉</h2>
+            <p>Le circuit est parfaitement câblé et sécurisé.</p>
+            <p>Validation en cours... (5s)</p>
+        </div>
+
+        <!-- POPUP 2 : ÉCRAN DE PUBLICITÉ / TRANSITION (20 SECONDES) -->
+        <div id="pub-overlay" class="overlay">
+            <h2>Chargement du niveau suivant...</h2>
+            <div class="pub-box">
+                <h3>Sponsor Officiel</h3>
+                <p style="font-size: 18px; color: #ffcc00; font-weight: bold;">« ÉLECTRICIEN / ÉLECTRICIENNE DES INSTALLATIONS DOMESTIQUES »</p>
+                <p>Le guide pratique indispensable pour maîtriser tous les schémas résidentiels.</p>
+            </div>
+            <p style="margin-top: 20px; font-size: 20px;">Votre jeu reprend dans : <span id="countdown" style="color:#ff3333; font-weight:bold;">20</span> secondes</p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('circuit-board');
+        const ctx = canvas.getContext('2d');
+        const statusMsg = document.getElementById('status-message');
+        
+        let currentLevel = 1;
+        let isDrawing = false;
+        let startTerminal = null;
+        let currentWireColor = '#cc0000';
+        let connections = [];
+        let terminals = {};
+
+        // Configuration des 7 niveaux inchangée
+        const levelConfig = {
+            1: { title: "Niveau 1 : La Prise de Courant", desc: "Reliez les bornes correspondantes du Disjoncteur à la Prise (Phase, Neutre, Terre).", terminals: { 'D_L': { x: 150, y: 150, color: '#cc0000' }, 'D_N': { x: 150, y: 200, color: '#0000ff' }, 'D_T': { x: 150, y: 250, color: 'stripe' }, 'P_L': { x: 610, y: 150, color: '#cc0000' }, 'P_N': { x: 610, y: 200, color: '#0000ff' }, 'P_T': { x: 570, y: 220, color: 'stripe' } } },
+            2: { title: "Niveau 2 : Le Simple Allumage", desc: "Alimentez l'interrupteur depuis le disjoncteur, raccordez le retour lampe (Orange) et bouclez le Neutre.", terminals: { 'D_L': { x: 120, y: 200, color: '#cc0000' }, 'D_N': { x: 120, y: 250, color: '#0000ff' }, 'INT_IN': { x: 380, y: 215, color: '#cc0000' }, 'INT_OUT': { x: 420, y: 215, color: '#ff6600' }, 'L_IN': { x: 640, y: 140, color: '#ff6600' }, 'L_OUT': { x: 660, y: 140, color: '#0000ff' } } },
+      
