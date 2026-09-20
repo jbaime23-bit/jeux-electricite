@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Atelier Électricité Bâtiment Pro</title>
+    <style>
+        * { box-sizing: border-box; font-family: sans-serif; }
+        body { background-color: #f4f7f6; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        
+        .pub-banner { width: 100%; max-width: 400px; height: 60px; background-color: #e2e8f0; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #64748b; margin: 10px 0; font-weight: bold; }
+        .container { width: 95%; max-width: 500px; background: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+        
+        .btn-menu { display: block; width: 100%; padding: 15px; margin: 10px 0; font-size: 16px; font-weight: bold; background-color: #ffffff; border: 2px solid #2563eb; color: #2563eb; border-radius: 6px; cursor: pointer; text-align: left; }
+        .btn-menu.premium { border-color: #db2777; color: #db2777; background-color: #fdf2f8; }
+        .badge-lock { float: right; background: #db2777; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
+        #game-screen, #monetize-screen, #ad-interstitial { display: none; }
+        
+        #canvas-container { width: 100%; background: #ffffff; border: 2px solid #334155; border-radius: 6px; margin: 15px 0; }
+        canvas { display: block; width: 100%; height: 250px; background: #ffffff; touch-action: none; }
+        
+        .colors { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; }
+        .color-dot { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; }
+        .color-dot.active { border-color: #000; transform: scale(1.1); }
+        
+        .btn-action { display: block; width: 100%; padding: 12px; margin: 8px 0; font-size: 16px; font-weight: bold; color: white; border: none; border-radius: 6px; cursor: pointer; text-align: center; }
+        .btn-success { background: #16a34a; }
+        .btn-danger { background: #dc2626; }
+        .btn-neutral { background: #475569; }
+
+        .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="pub-banner">💸 PUBLICITÉ GOOGLE ADSENSE (BANNER 400x60)</div>
+
+    <!-- 1. ÉCRAN PRINCIPAL -->
+    <div id="menu-screen" class="container">
+        <h1 style="font-size:22px; margin-bottom:5px;">Atelier Électricité Bâtiment Pro</h1>
+        <p style="color:#64748b; font-size:13px; margin-top:0;">Pratiquez vos raccordements en un clic</p>
+        
+        <div class="levels-list">
+            <button class="btn-menu" onclick="openLevel(1)">Niveau 1 : Prise de Courant</button>
+            <button class="btn-menu" onclick="openLevel(2)">Niveau 2 : Simple Allumage</button>
+            <button class="btn-menu" onclick="openLevel(3)">Niveau 3 : Double Allumage</button>
+            
+            <button class="btn-menu premium" onclick="openPremiumPopup()">Niveau 4 : Va-et-vient <span class="badge-lock">🔒 Bloqué</span></button>
+            <button class="btn-menu premium" onclick="openPremiumPopup()">Niveau 5 : Télérupteur <span class="badge-lock">🔒 Bloqué</span></button>
+            <button class="btn-menu premium" onclick="openPremiumPopup()">Niveau 6 : Minuterie <span class="badge-lock">🔒 Bloqué</span></button>
+        </div>
+    </div>
+
+    <!-- 2. ÉCRAN DE JEU -->
+    <div id="game-screen" class="container">
+        <h2 id="lvl-title" style="margin:5px 0;">Niveau 1</h2>
+        <p id="lvl-desc" style="color:#64748b; font-size:13px; margin-bottom:10px;">Description du travail.</p>
+        
+        <div class="colors">
+            <div id="c-phase" class="color-dot active" style="background:#dc2626;" onclick="changeColor('#dc2626', this)"></div>
+            <div id="c-neutre" class="color-dot" style="background:#2563eb;" onclick="changeColor('#2563eb', this)"></div>
+            <div id="c-terre" class="color-dot" style="background:#16a34a;" onclick="changeColor('#16a34a', this)"></div>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="board"></canvas>
+        </div>
+
+        <button class="btn-action btn-success" onclick="validateCircuit()">⚡ Vérifier le Câblage</button>
+        <button class="btn-action btn-danger" onclick="clearBoard()">Réinitialiser le tableau</button>
+        <button class="btn-action btn-neutral" onclick="backToMenu()">⬅ Retour au Menu</button>
+    </div>
+
+    <!-- 3. INTERFACE DE MONÉTISATION PREMIUM -->
+    <div id="monetize-screen" class="overlay-screen">
+        <h2 style="color:#db2777; margin-bottom:10px;">🔒 Contenu Premium Requis</h2>
+        <p style="color:#cbd5e1; max-width:280px; margin-top:0;">Ce schéma technique avancé fait partie du Pack Pro.</p>
+        <button class="btn-action btn-success" style="background:#db2777;" onclick="buyPack()">Acheter le Pack Pro (4.99€)</button>
+        <button class="btn-action btn-success" style="background:#2563eb;" onclick="watchAd()">🔓 Regarder une Vidéo (5s) pour débloquer</button>
+        <button class="btn-action btn-neutral" onclick="closePremiumPopup()">Fermer</button>
+    </div>
+
+    <!-- 4. MONÉTISATION : PUBLICITÉ VIDÉO INTERSTITIELLE -->
+    <div id="ad-interstitial" class="overlay-screen">
+        <span style="color:#64748b; font-size:11px; font-weight:bold; text-transform:uppercase;">Annonce Publicitaire</span>
+        <h2 style="margin:10px 0;">Vidéo Sponsorisée</h2>
+        <div style="width:260px; height:140px; background:#222; border:1px solid #444; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#666; font-style:italic;">Chargement du partenaire publicitaire...</div>
+        <p id="ad-timer" style="margin-top:15px; color:#94a3b8; font-weight:bold;">Votre jeu reprend dans 5s...</p>
+    </div>
+
+    <div class="pub-banner">💸 PUBLICITÉ GOOGLE ADSENSE (BANNER 400x60)</div>
+
+    <script>
+        let currentLevel = 1;
+        let activeColor = '#dc2626';
+        let drawing = false;
+        const canvas = document.getElementById('board');
+        const ctx = canvas.getContext('2d');
+
+        const descriptions = {
+            1: "Reliez les bornes du Disjoncteur à la Prise de courant (Phase, Neutre et Terre).",
+            2: "Câblez le circuit Simple Allumage (Disjoncteur → Interrupteur → Lampe).",
+            3: "Câblez le circuit Double Allumage pour commander les deux lampes séparément."
+        };
+
+        function setupCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = 250;
+            clearBoard();
+        }
+
+        function openLevel(lvl) {
+            currentLevel = lvl;
+            document.getElementById('lvl-title').innerText = "Atelier Niveau " + lvl;
+            document.getElementById('lvl-desc').innerText = descriptions[lvl] || "Câblez le schéma requis.";
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            setupCanvas();
+        }
+
+        function backToMenu() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('menu-screen').style.display = 'block';
+        }
+
+        function openPremiumPopup() { document.getElementById('monetize-screen').style.display = 'flex'; }
+        function closePremiumPopup() { document.getElementById('monetize-screen').style.display = 'none'; }
+        function buyPack() { alert("Achat effectué !"); closePremiumPopup(); openLevel(4); }
+
+        function watchAd() {
+            closePremiumPopup();
+            showInterstitial(() => { openLevel(4); });
+        }
+
+        function showInterstitial(callback) {
+            const adScreen = document.getElementById('ad-interstitial');
+            const timerText = document.getElementById('ad-timer');
+            adScreen.style.display = 'flex';
+            let timeLeft = 5;
+            timerText.innerText = "Votre jeu reprend dans " + timeLeft + "s...";
+            
+            const interval = setInterval(() => {
+                timeLeft--;
+                timerText.innerText = "Votre jeu reprend dans " + timeLeft + "s...";
+                if(timeLeft <= 0) {
+                    clearInterval(interval);
+                    adScreen.style.display = 'none';
+                    if(callback) callback();
+                }
+            }, 1000);
+        }
+
+        function changeColor(color, el) {
+            activeColor = color;
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function clearBoard() {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "#dc2626"; ctx.beginPath(); ctx.arc(35, 55, 9, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#2563eb"; ctx.beginPath(); ctx.arc(35, 115, 9, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#16a34a"; ctx.beginPath(); ctx.arc(35, 175, 9, 0, Math.PI*2); ctx.fill();
+            
+            ctx.fillStyle = "#475569"; ctx.beginPath(); ctx.arc(canvas.width - 35, 55, 9, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#475569"; ctx.beginPath(); ctx.arc(canvas.width - 35, 115, 9, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#475569"; ctx.beginPath(); ctx.arc(canvas.width - 35, 175, 9, 0, Math.PI*2); ctx.fill();
+
+      
