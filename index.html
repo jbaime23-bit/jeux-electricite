@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Atelier Électricité Bâtiment Pro</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7f6; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
+        
+        /* BANNIÈRES PUBLICITAIRES */
+        .pub-banner { width: 100%; max-width: 400px; height: 60px; background-color: #e2e8f0; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #64748b; margin: 10px 0; font-weight: bold; }
+        
+        .container { width: 92%; max-width: 500px; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
+        h1 { color: #1e293b; font-size: 24px; margin-bottom: 5px; }
+        p { color: #64748b; font-size: 14px; margin-top: 0; margin-bottom: 20px; }
+        
+        /* SYSTÈME DE GRILLE DE NIVEAUX */
+        .levels-list { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+        .level-btn { width: 100%; padding: 16px; font-size: 15px; font-weight: 700; background: #ffffff; border: 2px solid #2563eb; color: #2563eb; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        
+        /* États verrouillés (Monétisation) */
+        .level-btn.premium { border-color: #db2777; color: #db2777; background: #fdf2f8; }
+        .level-btn.premium .badge { font-size: 11px; background: #db2777; color: white; padding: 6px 10px; border-radius: 4px; font-weight: bold; }
+
+        /* ÉCRANS ET INTERFACES */
+        #game-screen, #monetize-screen, #ad-interstitial { display: none; }
+        
+        /* ZONE DE DESSIN DU CIRCUIT */
+        #canvas-container { position: relative; width: 100%; background: #f8fafc; border: 2px solid #334155; border-radius: 8px; margin: 15px 0; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 260px; background: #ffffff; cursor: crosshair; touch-action: none; }
+        
+        /* FILTRAGE DES COULEURS */
+        .colors { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
+        .color-dot { width: 35px; height: 35px; border-radius: 50%; border: 3px solid #cbd5e1; cursor: pointer; }
+        .color-dot.active { border-color: #0f172a; transform: scale(1.1); }
+        
+        /* BOUTONS D'ACTIONS */
+        .btn-action { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; margin-top: 8px; }
+        .btn-success { background: #16a34a; }
+        .btn-danger { background: #dc2626; }
+        .btn-neutral { background: #475569; }
+
+        /* ÉCRANS POPUPS ET PLACEMENT PUBLICITAIRE PLEIN ÉCRAN */
+        .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <!-- PUB DU HAUT -->
+    <div class="pub-banner">💸 PUBLICITÉ GOOGLE ADSENSE (BANNER 400x60)</div>
+
+    <!-- 1. ÉCRAN ACCUEIL / SÉLECTION NIVEAUX -->
+    <div id="menu-screen" class="container">
+        <h1>Atelier Électricité Bâtiment Pro</h1>
+        <p>Maîtrisez les schémas électriques par la pratique</p>
+        
+        <div class="levels-list">
+            <!-- Remplacement du onclick classique par onpointerdown pour une réactivité instantanée sous le doigt -->
+            <div class="level-btn" onpointerdown="openLevel(1)"><span>Niveau 1 : Prise de Courant</span></div>
+            <div class="level-btn" onpointerdown="openLevel(2)"><span>Niveau 2 : Simple Allumage</span></div>
+            <div class="level-btn" onpointerdown="openLevel(3)"><span>Niveau 3 : Double Allumage</span></div>
+            
+            <!-- Niveaux Premium -->
+            <div class="level-btn premium" onpointerdown="openPremiumPopup()">
+                <span>Niveau 4 : Va-et-vient</span>
+                <span class="badge">🔒 Bloqué</span>
+            </div>
+            <div class="level-btn premium" onpointerdown="openPremiumPopup()">
+                <span>Niveau 5 : Télérupteur</span>
+                <span class="badge">🔒 Bloqué</span>
+            </div>
+            <div class="level-btn premium" onpointerdown="openPremiumPopup()">
+                <span>Niveau 6 : Minuterie</span>
+                <span class="badge">🔒 Bloqué</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. ÉCRAN DU JEU ÉLECTRIQUE -->
+    <div id="game-screen" class="container">
+        <h2 id="lvl-title">Niveau 1</h2>
+        <p id="lvl-desc">Câblez le circuit.</p>
+        
+        <div class="colors">
+            <div id="c-phase" class="color-dot active" style="background:#dc2626;" onpointerdown="changeColor('#dc2626', this)"></div>
+            <div id="c-neutre" class="color-dot" style="background:#2563eb;" onpointerdown="changeColor('#2563eb', this)"></div>
+            <div id="c-terre" class="color-dot" style="background:#16a34a;" onpointerdown="changeColor('#16a34a', this)"></div>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="board"></canvas>
+        </div>
+
+        <button class="btn-action btn-success" onpointerdown="validateCircuit()">⚡ Vérifier le Câblage</button>
+        <button class="btn-action btn-danger" onpointerdown="clearBoard()">Réinitialiser</button>
+        <button class="btn-action btn-neutral" onpointerdown="backToMenu()">⬅ Retour au Menu</button>
+    </div>
+
+    <!-- 3. ÉCRAN POPUP MONÉTISATION -->
+    <div id="monetize-screen" class="overlay-screen">
+        <h2 style="color:#db2777;">🔒 Contenu Premium Requis</h2>
+        <p style="color:#cbd5e1; max-width:300px;">Ce schéma technique avancé fait partie du Pack Pro.</p>
+        <button class="btn-action btn-success" style="background:#db2777;" onpointerdown="buyPack()">Acheter le Pack Pro (4.99€)</button>
+        <button class="btn-action btn-success" style="background:#2563eb;" onpointerdown="watchAd()">🔓 Regarder une Vidéo pour débloquer</button>
+        <button class="btn-action btn-neutral" onpointerdown="closePremiumPopup()">Fermer</button>
+    </div>
+
+    <!-- 4. INTERSTITIAL PUBLICITAIRE FORCÉ -->
+    <div id="ad-interstitial" class="overlay-screen">
+        <span style="color:#64748b; font-size:12px; text-transform:uppercase; font-weight:bold;">Annonce Publicitaire</span>
+        <h2 style="margin:15px 0;">Vidéo Sponsorisée</h2>
+        <div style="width:280px; height:160px; background:#334155; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-style:italic;">Chargement de la publicité...</div>
+        <p id="ad-timer" style="margin-top:20px; color:#94a3b8;">Votre jeu reprend dans 5s...</p>
+    </div>
+
+    <!-- PUB DU BAS -->
+    <div class="pub-banner">💸 PUBLICITÉ GOOGLE ADSENSE (BANNER 400x60)</div>
+
+    <script>
+        let currentLevel = 1;
+        let activeColor = '#dc2626';
+        let drawing = false;
+        const canvas = document.getElementById('board');
+        const ctx = canvas.getContext('2d');
+
+        const descriptions = {
+            1: "Reliez les bornes du Disjoncteur à la Prise de courant (Phase, Neutre et Terre).",
+            2: "Câblez le circuit Simple Allumage (Disjoncteur → Interrupteur → Lampe).",
+            3: "Câblez le circuit Double Allumage pour commander les deux lampes séparément."
+        };
+
+        function setupCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = 260;
+            clearBoard();
+        }
+
+        function openLevel(lvl) {
+            currentLevel = lvl;
+            document.getElementById('lvl-title').innerText = "Atelier Niveau " + lvl;
+            document.getElementById('lvl-desc').innerText = descriptions[lvl] || "Câblez le schéma électrique requis.";
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            setTimeout(setupCanvas, 200);
+        }
+
+        function backToMenu() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('menu-screen').style.display = 'block';
+        }
+
+        function openPremiumPopup() { document.getElementById('monetize-screen').style.display = 'flex'; }
+        function closePremiumPopup() { document.getElementById('monetize-screen').style.display = 'none'; }
+        function buyPack() { alert("Achat effectué !"); closePremiumPopup(); openLevel(4); }
+
+        function watchAd() {
+            closePremiumPopup();
+            showInterstitial(() => {
+                alert("Publicité visionnée ! Niveau 4 débloqué.");
+                openLevel(4);
+            });
+        }
+
+        function showInterstitial(callback) {
+            const adScreen = document.getElementById('ad-interstitial');
+            const timerText = document.getElementById('ad-timer');
+            adScreen.style.display = 'flex';
+            let timeLeft = 5;
+            const interval = setInterval(() => {
+                timeLeft--;
+                timerText.innerText = "Votre jeu reprend dans " + timeLeft + "s...";
+                if(timeLeft <= 0) {
+                    clearInterval(interval);
+                    adScreen.style.display = 'none';
+                    if(callback) callback();
+                }
+            }, 1000);
+        }
+
+        function changeColor(color, el) {
+            activeColor = color;
+      
